@@ -1,11 +1,12 @@
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 import jwt from 'jsonwebtoken';
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const verifyJwt= asyncHandler( async(req, res, next)=>{
 try {
-        const token= req.cookies?.accessToken || req.header('Authorization')?.replace("Bearer ","");
+        const token= req?.cookies?.accessToken || req?.header('Authorization')?.replace("Bearer ","");
+        console.log("Token is: ",token);
         if(!token){
             throw new ApiError(400, 'UnAuthorized user');
         }
@@ -20,7 +21,7 @@ try {
         req.user=user;
         next();
 } catch (error) {
-    throw new ApiError(error.statusCode || 404, 'Something went wrong during verification');
+    throw new ApiError(error.statusCode || 404, error.message || 'Something went wrong during verification');
   }
 }
 
