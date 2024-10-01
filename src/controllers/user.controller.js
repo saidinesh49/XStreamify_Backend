@@ -96,18 +96,16 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     console.log(req.files);
-    const avatarLocalpath = req.files?.avatar && req.files.avatar.length > 0 ? req.files.avatar[0].path : undefined;
-    let coverLocalpath;
-    if (req.files?.coverImage && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
-        coverLocalpath = req.files.coverImage[0].path;
-    }
+    const avatarLocalpath = req.files?.avatar && req.files.avatar.length>0 ? req.files.avatar[0].path : undefined;
+    const coverLocalPath=req.files?.coverImage && req.files.coverImage.length>0 ? req.files.coverImage[0].path : undefined;
 
     if (!avatarLocalpath) {
+        console.log(req.files);
         throw new ApiError(400, 'Invalid Avatar');
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalpath);
-    const coverImage = await uploadOnCloudinary(coverLocalpath);
+    const coverImage= await uploadOnCloudinary(coverLocalPath);
     
     if (!avatar) {
         throw new ApiError(400, "Avatar upload failed");
@@ -207,10 +205,53 @@ const refreshAccessToken= asyncHandler( async(req, res)=>{
 
 });
 
+const changeCurrentPassword= asyncHandler( async(req,res)=>{
+    const { oldPassword,newPassword }=req.body;
+    if(!oldPassword || !newPassword){
+        throw new ApiError(400, 'Password not provided properly');
+    }
+
+    const accessToken=req?.cookies?.accessToken;
+
+    const decodedToken=await jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+    const user=await User.findById(decodedToken?._id);
+
+    if(oldPassword!=user.password){
+        throw new ApiError(401, 'Oldpassword Invalid');
+    }
+
+    const newUpdatedData=await User.findByIdAndUpdate(
+        user._id,
+        {
+            $set:{
+                password: newPassword
+            }
+        },
+        {
+            new: true
+        }
+    );
+
+    res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                newUpdatedData,
+            },
+            'Password updated successfully'
+        )
+    )
+}
+
+);
+
 export { 
     generateAccessandRefreshtoken,
     registerUser,
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword
  };
