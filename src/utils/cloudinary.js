@@ -12,6 +12,8 @@ const uploadOnCloudinary=async function(localFilepath){
     try{
     if (!localFilepath) return null;
 
+    console.log("Uploading file: ",localFilepath);
+
     const response=await cloudinary.uploader.upload(localFilepath,{
         resource_type: 'auto'
     });
@@ -25,4 +27,30 @@ const uploadOnCloudinary=async function(localFilepath){
    }
 }
 
-export {uploadOnCloudinary};
+const deleteFromCloudinary = async function(Url, Options = {}) {
+    try {
+        const urlString = String(Url);
+        if (!urlString) {
+            return "Old URL not provided properly.";
+        }
+
+        const publicId = urlString.split('/').pop().split('.')[0];
+
+        console.log('Public id for cloudinary is:', publicId);
+
+        const response = await cloudinary.uploader.destroy(publicId, {
+            resource_type: Options.resource_type || 'image'
+        });
+        
+        return response;
+    } catch (error) {
+        console.log(error.status || 500, error.message || 'Error while deleting from Cloudinary server');
+        return "Old avatar not deleted from Cloudinary server";
+    }
+}
+
+
+export {
+    uploadOnCloudinary,
+    deleteFromCloudinary
+};
