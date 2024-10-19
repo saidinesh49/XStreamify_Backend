@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import useRouter from './routes/user.route.js';
+import useRouter from './routes/user.routes.js';
 
 const app=express();
 
@@ -16,6 +16,6 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-app.use("/",useRouter);
+app.use("/u/",useRouter);
 
 export { app };
