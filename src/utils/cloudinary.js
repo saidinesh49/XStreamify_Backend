@@ -8,24 +8,35 @@ cloudinary.config({
 });
 
  
-const uploadOnCloudinary=async function(localFilepath){
-    try{
-    if (!localFilepath) return null;
+const uploadOnCloudinary = async function(localFilepath, isThumbnail = false) {
+    try {
+        if (!localFilepath) return null;
 
-    console.log("Uploading file: ",localFilepath);
+        console.log("Uploading file: ", localFilepath);
 
-    const response=await cloudinary.uploader.upload(localFilepath,{
-        resource_type: 'auto'
-    });
-    console.log('File successfully uploaded on cloudinary',response.url);
-    fs.unlinkSync(localFilepath);
-    return response;
+        const options = {
+            resource_type: isThumbnail ? 'image' : 'video',
+            media_metadata: isThumbnail ? false : true,
+        };
 
-   }catch(error){
-    fs.unlinkSync(localFilepath);
-    console.log("Failed to upload on cloudinary: ",error);
-   }
-}
+        const response = await cloudinary.uploader.upload(localFilepath, options);
+
+        console.log('File successfully uploaded on Cloudinary:', response.secure_url);
+
+        // Clean up local file
+        fs.unlinkSync(localFilepath);
+
+        // Return relevant response
+
+        return response;
+
+    } catch (error) {
+        console.log("Failed to upload on Cloudinary: ", error);
+        fs.unlinkSync(localFilepath); // Ensure the file is deleted even on error
+        throw new Error("Upload failed");
+    }
+};
+
 
 const deleteFromCloudinary = async function(Url, Options = {}) {
     try {
@@ -39,7 +50,7 @@ const deleteFromCloudinary = async function(Url, Options = {}) {
         console.log('Public id for cloudinary is:', publicId);
 
         const response = await cloudinary.uploader.destroy(publicId, {
-            resource_type: Options.resource_type || 'image'
+            resource_type: Options?.resource_type || 'video'
         });
         
         return response;
