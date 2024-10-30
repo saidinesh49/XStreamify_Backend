@@ -6,19 +6,77 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
-    const {name, description} = req.body
-
+    const {name, description} = req.body;
     //TODO: create playlist
+    if(!name || !description) {
+        throw new ApiError(400,"Playlist Name and description is required");
+    }
+
+    const newPLaylist=await Playlist.create({
+        name: name,
+        description: description,
+        owner: req.user?._id
+    });
+
+    if(!newPLaylist){
+        throw new ApiError(500,"Error while new creating playlist");
+    }
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200,
+        newPLaylist,
+        "Playlist created successfully"
+    ));
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
-    const {userId} = req.params
+    const {userId} = req.params;
     //TODO: get user playlists
+    if(!userId){
+        throw new ApiError(400,"User ID is required");
+    }
+    const playLists=await Playlist.aggregate([
+        {
+            $match:{
+                owner: userId
+            }
+        },
+        {
+            $project:{
+                name: 1,
+                description: 1,
+                videos: 1,
+            }
+        }
+    ]);
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200,
+        playLists,
+        "User Playlists fetched successfully"
+    ));
 })
 
 const getPlaylistById = asyncHandler(async (req, res) => {
-    const {playlistId} = req.params
+    const {playlistId} = req.params;
     //TODO: get playlist by id
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid playlist id");
+    }
+
+    const playlist=await Playlist.findById(playlistId);
+    if(!playlist){
+        throw new ApiError(404, "Playlist not found");
+    }
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200,
+        playlist,
+        "Playlist fetched successfully"
+    ));
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
