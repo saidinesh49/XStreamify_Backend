@@ -97,6 +97,47 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params;
+
+    if(!subscriberId) {
+        throw new ApiError(400, "SubscriberId is missing");
+    }
+
+    const channelList=await Subscription.aggregate([
+        {
+            $match:{
+                subscriber: subscriberId
+            }
+        },
+        {
+            $lookup:{
+                from: "users",
+                localField: "channel",
+                foreignField: "_id",
+                as: "subscribedToChannels"
+            }
+        },
+        {
+            $unwind:{
+                path: "$subscribedToChannels",
+                preserveNullAndEmptyArrays: true,
+            }
+        },
+        {
+            $project:{
+                username: "$subscribedToChannels.username",
+                fullName: "$subscribedToChannels.fullName",
+                _id: "$subscribedToChannels._id",
+                avatar: "$subscribedToChannels.avatar",
+            }
+        }
+    ]);
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200,
+        channelList,
+        "Subscribed Channels Retrieved Successfully"
+    ));
 })
 
 export {
