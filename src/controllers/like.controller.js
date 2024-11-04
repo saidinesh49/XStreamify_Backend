@@ -124,8 +124,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         null,
         "Unliked Successfully"
     ))
-}
-)
+})
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
