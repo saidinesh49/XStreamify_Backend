@@ -50,6 +50,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
     const {tweetId}=req.params;
+    const {content}=req.body;
     if(!tweetId){
         throw new ApiError(400,"Invalid tweet params");
     }
@@ -58,13 +59,13 @@ const updateTweet = asyncHandler(async (req, res) => {
         tweetId,
         {
             $set:{
-                content: req.body.content,
+                content: content,
             }
         },
         { new: true }
     );
 
-    if(!updateTweet){
+    if(!updatedTweet){
         throw new ApiError(404, "Tweet not found");
     }
 
