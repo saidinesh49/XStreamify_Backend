@@ -93,9 +93,26 @@ const deleteTweet = asyncHandler(async (req, res) => {
     ));
 })
 
+const likeTweet = asyncHandler(async (req, res) => {
+    const { tweetId } = req.params;
+    const tweet = await Tweet.findById(tweetId);
+  
+    if (!tweet) {
+      throw new ApiError(404, 'Tweet not found');
+    }
+  
+    tweet.likes += 1; // Increment the like count
+    await tweet.save();
+  
+    return res.status(200).json(
+      new ApiResponse(200, tweet, 'Tweet liked successfully')
+    );
+  });
+
 export {
     createTweet,
     getUserTweets,
     updateTweet,
-    deleteTweet
+    deleteTweet,
+    likeTweet,
 }

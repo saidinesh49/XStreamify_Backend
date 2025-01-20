@@ -15,13 +15,13 @@ const uploadOnCloudinary = async function(localFilepath, isThumbnail = false) {
         console.log("Uploading file: ", localFilepath);
 
         const options = {
-            resource_type: isThumbnail ? 'image' : 'video',
-            media_metadata: isThumbnail ? false : true,
+            resource_type: 'auto',
+            allowedFormats: ['jpg', 'png', 'gif', 'jpeg', 'mp4'],
         };
 
         const response = await cloudinary.uploader.upload(localFilepath, options);
 
-        console.log('File successfully uploaded on Cloudinary:', response.secure_url);
+        console.log('File successfully uploaded on Cloudinary:', response?.secure_url);
 
         // Clean up local file
         fs.unlinkSync(localFilepath);
@@ -31,8 +31,8 @@ const uploadOnCloudinary = async function(localFilepath, isThumbnail = false) {
         return response;
 
     } catch (error) {
-        console.log("Failed to upload on Cloudinary: ", error);
         fs.unlinkSync(localFilepath); // Ensure the file is deleted even on error
+        console.log("Failed to upload on Cloudinary: ", error);
         throw new Error("Upload failed");
     }
 };
