@@ -123,6 +123,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
+	console.log("Received params at getVideoById is: ", req?.params);
 	const { videoId } = req.params;
 	//TODO: get video by id
 	if (!isValidObjectId(videoId)) {
