@@ -7,6 +7,7 @@ import {
 	getTweetLikes,
 	getVideoLikes,
 	getCommentLikes,
+	isVideoLiked,
 } from "../controllers/like.controller.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 
@@ -16,9 +17,13 @@ router.use(verifyJwt); // Apply verifyJWT middleware to all routes in this file
 router.route("/toggle/v/:videoId").post(toggleVideoLike);
 router.route("/toggle/c/:commentId").post(toggleCommentLike);
 router.route("/toggle/t/:tweetId").post(toggleTweetLike);
+
 router.route("/videos").get(getLikedVideos);
+
 router.route("/videos/:videoId").get(getVideoLikes);
 router.route("/tweets/:tweetId").get(getTweetLikes);
 router.route("/comments/:commentId").get(getCommentLikes);
+
+router.route("/videos/:videoId/check").get(isVideoLiked);
 
 export default router;

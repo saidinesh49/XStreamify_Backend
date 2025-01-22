@@ -200,6 +200,31 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 		.json(new ApiResponse(200, videos, "Liked Videos fetched successfully"));
 });
 
+const isVideoLiked = asyncHandler(async (req, res) => {
+	//TODO: check if video is liked or not
+	const { videoId } = req?.params;
+
+	if (!videoId && mongoose.Types.ObjectId.isValid(videoId)) {
+		throw new ApiError(400, "VideoId is Invalid");
+	}
+
+	const response = await Like.findOne({
+		likedBy: req?.user?._id,
+		video: videoId,
+	});
+	const isLiked = response ? true : false;
+	if (!isLiked) {
+		return res
+			.status(200)
+			.json(
+				new ApiResponse(200, isLiked, "Video is not liked by the current user"),
+			);
+	}
+	return res
+		.status(200)
+		.json(new ApiResponse(200, true, "Video is liked by the current user"));
+});
+
 export {
 	toggleCommentLike,
 	toggleTweetLike,
@@ -208,4 +233,5 @@ export {
 	getVideoLikes,
 	getCommentLikes,
 	getTweetLikes,
+	isVideoLiked,
 };
