@@ -24,7 +24,7 @@ app.use(
 			"Content-Type",
 			"Authorization",
 		],
-		methods: ["GET", "POST", "PUT", "DELETE"],
+		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 		credentials: true,
 		optionsSuccessStatus: 200,
 	}),

@@ -146,4 +146,31 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 		);
 });
 
-export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
+const isUserSubcribedToChannel = asyncHandler(async (req, res) => {
+	const { channelId } = req.params;
+	if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
+		throw new ApiError(400, "Invalid Channel Id");
+	}
+
+	const response = await Subscription.find({
+		subscriber: req?.user?._id,
+		channel: channelId,
+	});
+
+	if (!response?._id) {
+		return res
+			.status(200)
+			.json(200, false, "User have not subcribed to the channel");
+	}
+
+	return res
+		.status(201)
+		.json(201, true, "User have already subcribed to the channel");
+});
+
+export {
+	toggleSubscription,
+	getUserChannelSubscribers,
+	getSubscribedChannels,
+	isUserSubcribedToChannel,
+};
