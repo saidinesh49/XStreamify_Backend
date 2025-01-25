@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 import useRouter from "./routes/user.routes.js";
 import videoRouter from "./routes/video.routes.js";
@@ -30,8 +31,17 @@ app.use(
 	}),
 );
 
+// Use body-parser with increased limit
+app.use(bodyParser.json({ limit: "50mb", extended: true }));
+app.use(
+	bodyParser.urlencoded({
+		limit: "50mb",
+		extended: true,
+		parameterLimit: 50000,
+	}),
+);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 app.use(express.static("public"));
 app.use(cookieParser());
 
