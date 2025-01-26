@@ -242,17 +242,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 		throw new ApiError(400, "Password not provided properly");
 	}
 
+	console.log(req?.user);
+
 	const accessToken = req?.cookies?.accessToken;
 
-	const decodedToken = await jwt.verify(
-		accessToken,
-		process.env.ACCESS_TOKEN_SECRET,
-	);
-
-	const user = await User.findById(decodedToken?._id);
+	const user = await User.findById(req.user?._id);
 
 	const ispasswordCorrect = await user.isPasswordCorrect(oldPassword);
-
+	console.log("ispasscorrect: ", ispasswordCorrect);
 	if (!ispasswordCorrect) {
 		throw new ApiError(401, "Oldpassword Invalid");
 	}

@@ -18,6 +18,6 @@ router
 
 router.route("/c/:channelId/check").get(isUserSubcribedToChannel);
 
-router.route("/u/:channelId").get(getUserChannelSubscribers);
+router.route("/u/followers").get(getUserChannelSubscribers);
 
 export default router;

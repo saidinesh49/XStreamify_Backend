@@ -50,9 +50,9 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscribers list of a channel (in form of json array)
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-	const { channelId } = req.params;
+	const channelId = req.user?._id;
 	if (!channelId) {
-		throw new ApiError(400, "channelId is required");
+		throw new ApiError(401, "Unathorized channel");
 	}
 	const subscribers = await Subscription.aggregate([
 		{
@@ -85,7 +85,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 			$replaceRoot: { newRoot: "$subscribedUsers" }, // Set the root to be the user object
 		},
 	]);
-
+	console.log("Followings: ", subscribers);
 	return res
 		.status(200)
 		.json(
