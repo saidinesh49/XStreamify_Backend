@@ -6,5 +6,9 @@
 			"use": "@vercel/node"
 		}
 	],
-	"routes": [{ "src": "/(.*)", "dest": "src/index.js" }]
+	"routes": [{ "src": "/(.*)", "dest": "src/index.js" }],
+	"functions": {
+		"maxDuration": 30,
+		"maxLambdaSize": "50mb"
+	}
 }
