@@ -1,14 +1,16 @@
 {
-	"version": 2,
-	"builds": [
-		{
-			"src": "src/index.js",
-			"use": "@vercel/node"
-		}
-	],
-	"routes": [{ "src": "/(.*)", "dest": "src/index.js" }],
-	"functions": {
-		"maxDuration": 30,
-		"maxLambdaSize": "50mb"
-	}
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/index.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [{ "src": "/(.*)", "dest": "src/index.js" }],
+    "functions": {
+        "src/index.js": {
+            "maxDuration": 30,
+            "memory": "50mb"
+        }
+    }
 }
