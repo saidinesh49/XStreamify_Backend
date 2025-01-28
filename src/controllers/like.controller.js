@@ -225,6 +225,28 @@ const isVideoLiked = asyncHandler(async (req, res) => {
 		.json(new ApiResponse(200, true, "Video is liked by the current user"));
 });
 
+const isTweetLikedByUser = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+
+	const isLiked = await Like.findOne({
+		tweet: tweetId,
+		likedBy: req.user?._id,
+	});
+
+	if (isLiked) {
+		console.log("already liked by user");
+		return res
+			.status(200)
+			.json(new ApiResponse(200, { isLiked: true }, "Tweet liked"));
+	}
+
+	return res
+		.status(200)
+		.json(
+			new ApiResponse(200, { isLiked: false }, "Tweet like status fetched"),
+		);
+});
+
 export {
 	toggleCommentLike,
 	toggleTweetLike,
@@ -234,4 +256,5 @@ export {
 	getCommentLikes,
 	getTweetLikes,
 	isVideoLiked,
+	isTweetLikedByUser,
 };

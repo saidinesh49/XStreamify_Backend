@@ -138,4 +138,61 @@ const deleteComment = asyncHandler(async (req, res) => {
 		.json(new ApiResponse(200, {}, "Comment deleted successfully"));
 });
 
-export { getVideoComments, addComment, updateComment, deleteComment };
+const addCommentToTweet = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+	const { content } = req.body;
+
+	if (!content) {
+		throw new ApiError(400, "Content is required");
+	}
+
+	const comment = await Comment.create({
+		content,
+		tweet: tweetId,
+		owner: req.user?._id,
+	});
+
+	return res
+		.status(201)
+		.json(new ApiResponse(201, comment, "Comment added successfully"));
+});
+
+const getTweetComments = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+
+	const comments = await Comment.find({ tweet: tweetId })
+		.populate("owner", "username avatar")
+		.sort("-createdAt");
+
+	return res
+		.status(200)
+		.json(new ApiResponse(200, comments, "Comments fetched successfully"));
+});
+
+const getTweetCommentsCount = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+
+	const commentsCount = await Comment.countDocuments({
+		tweet: tweetId,
+	});
+
+	return res
+		.status(200)
+		.json(
+			new ApiResponse(
+				200,
+				{ count: commentsCount },
+				"Tweet comments count fetched",
+			),
+		);
+});
+
+export {
+	getVideoComments,
+	addComment,
+	updateComment,
+	deleteComment,
+	addCommentToTweet,
+	getTweetComments,
+	getTweetCommentsCount,
+};
