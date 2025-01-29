@@ -247,6 +247,34 @@ const isTweetLikedByUser = asyncHandler(async (req, res) => {
 		);
 });
 
+const deleteVideoLikes = asyncHandler(async (req, res) => {
+	const { videoId } = req.params;
+	if (!videoId) {
+		throw new ApiError(400, "VideoId is required");
+	}
+	const result = await Like.deleteMany({ video: videoId });
+
+	return res
+		.status(200)
+		.json(
+			new ApiResponse(200, result, "All likes on video deleted successfully"),
+		);
+});
+
+const deleteTweetLikes = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+	if (!tweetId) {
+		throw new ApiError(400, "TweetId is required");
+	}
+	const result = await Like.deleteMany({ tweet: tweetId });
+
+	return res
+		.status(200)
+		.json(
+			new ApiResponse(200, result, "All likes on tweet deleted successfully"),
+		);
+});
+
 export {
 	toggleCommentLike,
 	toggleTweetLike,
@@ -257,4 +285,6 @@ export {
 	getTweetLikes,
 	isVideoLiked,
 	isTweetLikedByUser,
+	deleteVideoLikes,
+	deleteTweetLikes,
 };

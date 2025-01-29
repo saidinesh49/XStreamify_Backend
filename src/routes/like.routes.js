@@ -9,6 +9,8 @@ import {
 	getCommentLikes,
 	isVideoLiked,
 	isTweetLikedByUser,
+	deleteVideoLikes,
+	deleteTweetLikes,
 } from "../controllers/like.controller.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 
@@ -20,6 +22,8 @@ router.route("/toggle/c/:commentId").post(toggleCommentLike);
 router.route("/toggle/t/:tweetId").post(toggleTweetLike);
 
 router.route("/videos").get(getLikedVideos);
+router.route("/:videoId/all").delete(deleteVideoLikes);
+router.route("/:tweetId/all").delete(deleteTweetLikes);
 
 router.route("/videos/:videoId").get(getVideoLikes);
 router.route("/tweets/:tweetId").get(getTweetLikes);

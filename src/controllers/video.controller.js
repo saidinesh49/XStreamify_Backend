@@ -8,6 +8,10 @@ import {
 	deleteFromCloudinary,
 	uploadOnCloudinary,
 } from "../utils/cloudinary.js";
+import { deleteVideoComments } from "./comment.controller.js";
+import { deleteVideoLikes } from "./like.controller.js";
+import { Like } from "../models/like.model.js";
+import { Comment } from "../models/comment.model.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
 	const {
@@ -74,10 +78,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
 		throw new ApiError(400, "Title and description are required");
 	}
 
-	const videoLocalPath = req.files?.videoFile[0]?.path || "";
-	const thumbnailLocalPath = req.files?.thumbnail[0]?.path || "";
-
-	// console.log("req.files.videoFile is: ", req.files?.videoFile[0].path);
+	// Updated field name from videoFile to video
+	const videoLocalPath = req.files?.video?.[0]?.path;
+	const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
 	if (!videoLocalPath) {
 		throw new ApiError(400, "Video file is missing");
@@ -217,7 +220,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 		throw new ApiError(404, "Video not found");
 	}
 
-	// Delete video file and thumbnail if it exists
+	// Delete video file and thumbnail from cloudinary
 	const deletedVideoRes = await deleteFromCloudinary(video.videoFile);
 	if (!deletedVideoRes) {
 		throw new ApiError(500, "Error while deleting video from Cloudinary");
@@ -227,9 +230,24 @@ const deleteVideo = asyncHandler(async (req, res) => {
 		await deleteFromCloudinary(video.thumbnail, { resource_type: "image" });
 	}
 
+	// Delete all comments and likes associated with the video
+	await Promise.all([
+		Like.deleteMany({ video: videoId }),
+		Comment.deleteMany({ video: videoId }),
+	]);
+
+	// Delete the video document itself
+	await Video.findByIdAndDelete(videoId);
+
 	return res
 		.status(200)
-		.json(new ApiResponse(200, deletedVideoRes, "Video deleted successfully"));
+		.json(
+			new ApiResponse(
+				200,
+				{},
+				"Video and associated data deleted successfully",
+			),
+		);
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {

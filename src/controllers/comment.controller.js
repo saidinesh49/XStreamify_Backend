@@ -187,6 +187,40 @@ const getTweetCommentsCount = asyncHandler(async (req, res) => {
 		);
 });
 
+const deleteVideoComments = asyncHandler(async (req, res) => {
+	const { videoId } = req.params;
+
+	if (!videoId) {
+		throw new ApiError(400, "Video id is required");
+	}
+
+	const comments = await Comment.deleteMany({ video: videoId });
+
+	return res
+		.status(200)
+		.json(new ApiResponse(200, comments, "All comments deleted successfully"));
+});
+
+const deleteTweetComments = asyncHandler(async (req, res) => {
+	const { tweetId } = req.params;
+
+	if (!tweetId) {
+		throw new ApiError(400, "Tweet id is required");
+	}
+
+	const comments = await Comment.deleteMany({ tweet: tweetId });
+
+	return res
+		.status(200)
+		.json(
+			new ApiResponse(
+				200,
+				comments,
+				"All comments on the Tweet deleted successfully",
+			),
+		);
+});
+
 export {
 	getVideoComments,
 	addComment,
@@ -195,4 +229,6 @@ export {
 	addCommentToTweet,
 	getTweetComments,
 	getTweetCommentsCount,
+	deleteVideoComments,
+	deleteTweetComments,
 };

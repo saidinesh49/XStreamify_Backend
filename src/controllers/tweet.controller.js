@@ -76,10 +76,20 @@ const deleteTweet = asyncHandler(async (req, res) => {
 		throw new ApiError(400, "Invalid tweet id");
 	}
 
-	await Tweet.deleteOne({ _id: tweetId });
+	const result = await Tweet.deleteOne({ _id: tweetId });
+
+	if (!result) {
+		throw new ApiError(404, "Tweet not found");
+	}
+
+	await Promise.all([
+		Like.deleteMany({ tweet: tweetId }),
+		Comment.deleteMany({ tweet: tweetId }),
+	]);
+
 	return res
 		.status(200)
-		.json(new ApiResponse(200, null, "Tweet deleted successfully"));
+		.json(new ApiResponse(200, result, "Tweet deleted successfully"));
 });
 
 const likeTweet = asyncHandler(async (req, res) => {
