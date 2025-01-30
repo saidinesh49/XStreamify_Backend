@@ -72,34 +72,34 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-	const { title, description } = req.body;
+	const { title, description, videoUrl, duration, thumbnailUrl } = req.body;
 
-	if (!title || !description) {
-		throw new ApiError(400, "Title and description are required");
+	if (!title || !description || !videoUrl) {
+		throw new ApiError(400, "Title, description, videoUrl are required");
 	}
 
 	// Updated field name from videoFile to video
-	const videoLocalPath = req.files?.video?.[0]?.path;
-	const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
+	// const videoLocalPath = req.files?.video?.[0]?.path;
+	// const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
-	if (!videoLocalPath) {
-		throw new ApiError(400, "Video file is missing");
-	}
+	// if (!videoLocalPath) {
+	// 	throw new ApiError(400, "Video file is missing");
+	// }
 
-	const video = await uploadOnCloudinary(videoLocalPath);
-	if (!video) {
-		throw new ApiError(400, "Failed to upload video to Cloudinary");
-	}
-	const videoUrl = video?.secure_url;
+	// const video = await uploadOnCloudinary(videoLocalPath);
+	// if (!video) {
+	// 	throw new ApiError(400, "Failed to upload video to Cloudinary");
+	// }
+	// const videoUrl = video?.secure_url;
 
-	var thumbnailUrl = null;
-	if (thumbnailLocalPath) {
-		const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, true);
-		if (!thumbnail) {
-			throw new ApiError(400, "Failed to upload thumbnail to Cloudinary");
-		}
-		thumbnailUrl = thumbnail?.secure_url;
-	}
+	// var thumbnailUrl = null;
+	// if (thumbnailLocalPath) {
+	// 	const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, true);
+	// 	if (!thumbnail) {
+	// 		throw new ApiError(400, "Failed to upload thumbnail to Cloudinary");
+	// 	}
+	// 	thumbnailUrl = thumbnail?.secure_url;
+	// }
 
 	console.log(
 		"Urls after video and thumbnail uplaoding.. ",
@@ -115,7 +115,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 		thumbnail: thumbnailUrl,
 		title: title,
 		description: description,
-		duration: video.duration,
+		duration: duration,
 		owner: req.user?._id,
 		username: req.user?.username,
 	});
