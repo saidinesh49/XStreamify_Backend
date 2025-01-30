@@ -50,42 +50,53 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 // controller to return subscribers list of a channel (in form of json array)
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-	const channelId = req.user?._id;
+	const { channelId } = req.params;
 	if (!channelId) {
 		throw new ApiError(401, "Unathorized channel");
 	}
-	const subscribers = await Subscription.aggregate([
-		{
-			$match: {
-				channel: channelId,
-			},
-		},
-		{
-			$lookup: {
-				from: "users",
-				localField: "subscriber",
-				foreignField: "_id",
-				as: "subscribedUsers",
-				pipeline: [
-					{
-						$project: {
-							username: 1,
-							fullName: 1,
-							_id: 1,
-							avatar: 1,
-						},
-					},
-				],
-			},
-		},
-		{
-			$unwind: "$subscribedUsers", // Flatten the array
-		},
-		{
-			$replaceRoot: { newRoot: "$subscribedUsers" }, // Set the root to be the user object
-		},
-	]);
-	console.log("Followings: ", subscribers);
+	// const subscribers = await Subscription.aggregate([
+	// 	{
+	// 		$match: {
+	// 			channel: channelId,
+	// 		},
+	// 	},
+	// 	{
+	// 		$lookup: {
+	// 			from: "users",
+	// 			localField: "subscriber",
+	// 			foreignField: "_id",
+	// 			as: "subscribedUsers",
+	// 			pipeline: [
+	// 				{
+	// 					$project: {
+	// 						username: 1,
+	// 						fullName: 1,
+	// 						_id: 1,
+	// 						avatar: 1,
+	// 					},
+	// 				},
+	// 			],
+	// 		},
+	// 	},
+	// 	{
+	// 		$unwind: "$subscribedUsers", // Flatten the array
+	// 	},
+	// 	{
+	// 		$replaceRoot: { newRoot: "$subscribedUsers" }, // Set the root to be the user object
+	// 	},
+	// ]);
+	const subscriptions = await Subscription.find({ channel: channelId });
+
+	const subscribers = [];
+	for (const subscription of subscriptions) {
+		const user = await User.findById(subscription.subscriber).select(
+			"username fullName avatar",
+		);
+		if (user) {
+			subscribers.push(user);
+		}
+	}
+	console.log("Followers: ", subscribers);
 	return res
 		.status(200)
 		.json(
@@ -133,7 +144,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 		},
 	]);
 
-	console.log("Aggregated channel list:", channelList);
+	console.log("Followings:", channelList);
 
 	return res
 		.status(200)
