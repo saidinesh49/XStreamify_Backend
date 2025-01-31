@@ -19,16 +19,16 @@ import { verifyJwt } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
-	upload.fields([
-		{
-			name: "avatar",
-			maxCount: 1,
-		},
-		{
-			name: "coverImage",
-			maxCount: 1,
-		},
-	]),
+	// upload.fields([
+	// 	{
+	// 		name: "avatar",
+	// 		maxCount: 1,
+	// 	},
+	// 	{
+	// 		name: "coverImage",
+	// 		maxCount: 1,
+	// 	},
+	// ]),
 	registerUser,
 );
 
@@ -40,13 +40,9 @@ router.route("/refresh-access").post(refreshAccessToken);
 
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
 
-router
-	.route("/update-avatar")
-	.patch(upload.single("avatar"), verifyJwt, updateUserAvatar);
+router.route("/update-avatar").patch(verifyJwt, updateUserAvatar);
 
-router
-	.route("/update-coverimage")
-	.patch(upload.single("coverImage"), verifyJwt, updateUserCoverImage);
+router.route("/update-coverimage").patch(verifyJwt, updateUserCoverImage);
 
 router.route("/current-user").get(verifyJwt, getCurrentUser);
 
