@@ -72,16 +72,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-	const {
-		title,
-		description,
-		videoUrl,
-		duration,
-		thumbnailUrl = "",
-	} = req.body;
+	const { title, description, videoUrl, duration, thumbnailUrl } = req.body;
 
-	if (!title || !description || !videoUrl) {
-		throw new ApiError(400, "Title, description, videoUrl are required");
+	if (!title || !description || !videoUrl || !thumbnailUrl) {
+		throw new ApiError(
+			400,
+			"Title, description, videoUrl, thumbnail are required",
+		);
 	}
 
 	// Updated field name from videoFile to video
@@ -118,7 +115,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 	const videoDetails = await Video.create({
 		videoFile: videoUrl,
-		thumbnail: thumbnailUrl || "",
+		thumbnail: thumbnailUrl,
 		title: title,
 		description: description,
 		duration: duration,
@@ -173,7 +170,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 			$set: {
 				title: title,
 				description: description,
-				thumbnail: thumbnailUrl || oldDetailsOfVideo?.thumbnail || "",
+				thumbnail: thumbnailUrl || oldDetailsOfVideo?.thumbnail,
 			},
 		},
 		{ new: true },
@@ -183,18 +180,16 @@ const updateVideo = asyncHandler(async (req, res) => {
 		throw new ApiError(400, "Failed to update video");
 	}
 
-	if (oldDetailsOfVideo?.thumbnail) {
-		const deletePrevThumbnail = await deleteFromCloudinary(
-			oldDetailsOfVideo?.thumbnail,
-			{ resource_type: "image" },
+	const deletePrevThumbnail = await deleteFromCloudinary(
+		oldDetailsOfVideo?.thumbnail,
+		{ resource_type: "image" },
+	);
+	console.log("Response of old thumbail deletion:", deletePrevThumbnail);
+	if (!deletePrevThumbnail) {
+		throw new ApiError(
+			400,
+			"Failed to delete previous thumbnail from cloudinary",
 		);
-		console.log("Response of old thumbail deletion:", deletePrevThumbnail);
-		if (!deletePrevThumbnail) {
-			throw new ApiError(
-				400,
-				"Failed to delete previous thumbnail from cloudinary",
-			);
-		}
 	}
 
 	return res
@@ -225,12 +220,21 @@ const deleteVideo = asyncHandler(async (req, res) => {
 	const deletedVideoRes = await deleteFromCloudinary(videoPublicId, {
 		resource_type: "video",
 	});
+	console.log(
+		"deletedVideo response:",
+		deletedVideoRes,
+		"video public id:",
+		videoPublicId,
+	);
 	if (!deletedVideoRes) {
 		throw new ApiError(500, "Error while deleting video from Cloudinary");
 	}
 
 	if (thumbnailPublicId) {
-		await deleteFromCloudinary(thumbnailPublicId, { resource_type: "image" });
+		const thumbnailResponse = await deleteFromCloudinary(thumbnailPublicId, {
+			resource_type: "image",
+		});
+		console.log("deletedThumbnail response:", thumbnailResponse);
 	}
 
 	// Delete all comments and likes associated with the video
