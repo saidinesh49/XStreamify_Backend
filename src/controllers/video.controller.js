@@ -72,7 +72,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-	const { title, description, videoUrl, duration, thumbnailUrl } = req.body;
+	const {
+		title,
+		description,
+		videoUrl,
+		duration,
+		thumbnailUrl = "",
+	} = req.body;
 
 	if (!title || !description || !videoUrl) {
 		throw new ApiError(400, "Title, description, videoUrl are required");
@@ -112,7 +118,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 	const videoDetails = await Video.create({
 		videoFile: videoUrl,
-		thumbnail: thumbnailUrl,
+		thumbnail: thumbnailUrl || "",
 		title: title,
 		description: description,
 		duration: duration,
@@ -144,51 +150,21 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
 	const { videoId } = req.params;
 	//TODO: update video details like title, description, thumbnail
-	const { title, description } = req.body;
-	const thumbnailLocalPath = req.file?.path || "";
-	if (thumbnailLocalPath) {
-		const video = await Video.findById(videoId).select("thumbnail");
+	const { title, description, thumbnailUrl } = req.body;
+	// const thumbnailLocalPath = req.file?.path || "";
+	console.log("data recieved at backend is:", req.body);
 
-		if (!video.thumbnail) {
-			throw new ApiError(400, "Video not found");
-		}
+	const oldDetailsOfVideo = await Video.findById(videoId).select(
+		"thumbnail owner",
+	);
 
-		const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, true);
+	// const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, true);
 
-		if (!thumbnail) {
-			throw new ApiError(400, "Failed to upload thumbnail to cloudinary");
-		}
-
-		const updateVideo = await Video.findByIdAndUpdate(
-			videoId,
-			{
-				$set: {
-					title: title,
-					description: description,
-					thumbnail: thumbnail.url,
-				},
-			},
-			{ new: true },
-		);
-
-		if (!updateVideo) {
-			throw new ApiError(400, "Failed to update video");
-		}
-
-		const deletePrevThumbnail = await deleteFromCloudinary(video.thumbnail, {
-			resourse_type: "image",
-		});
-
-		if (!deletePrevThumbnail) {
-			throw new ApiError(
-				400,
-				"Failed to delete previous thumbnail from cloudinary",
-			);
-		}
-
-		return res
-			.status(200)
-			.json(new ApiResponse(200, updateVideo, "Video updated successfully"));
+	// if (!thumbnail) {
+	// 	throw new ApiError(400, "Failed to upload thumbnail to cloudinary");
+	// }
+	if (!oldDetailsOfVideo?.owner) {
+		throw new ApiError(404, "Video not found");
 	}
 
 	const updatedVideo = await Video.findByIdAndUpdate(
@@ -197,10 +173,29 @@ const updateVideo = asyncHandler(async (req, res) => {
 			$set: {
 				title: title,
 				description: description,
+				thumbnail: thumbnailUrl || oldDetailsOfVideo?.thumbnail || "",
 			},
 		},
 		{ new: true },
 	);
+
+	if (!updatedVideo) {
+		throw new ApiError(400, "Failed to update video");
+	}
+
+	if (oldDetailsOfVideo?.thumbnail) {
+		const deletePrevThumbnail = await deleteFromCloudinary(
+			oldDetailsOfVideo?.thumbnail,
+			{ resource_type: "image" },
+		);
+		console.log("Response of old thumbail deletion:", deletePrevThumbnail);
+		if (!deletePrevThumbnail) {
+			throw new ApiError(
+				400,
+				"Failed to delete previous thumbnail from cloudinary",
+			);
+		}
+	}
 
 	return res
 		.status(200)
@@ -220,14 +215,22 @@ const deleteVideo = asyncHandler(async (req, res) => {
 		throw new ApiError(404, "Video not found");
 	}
 
-	// Delete video file and thumbnail from cloudinary
-	const deletedVideoRes = await deleteFromCloudinary(video.videoFile);
+	// Extract public IDs from URLs
+	const videoPublicId = video.videoFile.split("/").pop().split(".")[0];
+	const thumbnailPublicId = video.thumbnail
+		? video.thumbnail.split("/").pop().split(".")[0]
+		: null;
+
+	// Delete video file and thumbnail from Cloudinary
+	const deletedVideoRes = await deleteFromCloudinary(videoPublicId, {
+		resource_type: "video",
+	});
 	if (!deletedVideoRes) {
 		throw new ApiError(500, "Error while deleting video from Cloudinary");
 	}
 
-	if (video.thumbnail) {
-		await deleteFromCloudinary(video.thumbnail, { resource_type: "image" });
+	if (thumbnailPublicId) {
+		await deleteFromCloudinary(thumbnailPublicId, { resource_type: "image" });
 	}
 
 	// Delete all comments and likes associated with the video
