@@ -38,6 +38,12 @@ const videoSchema = new Schema(
 			type: String,
 			required: true,
 		},
+		tags: [
+			{
+				type: String,
+				trim: true,
+			},
+		],
 	},
 	{ timestamps: true },
 );

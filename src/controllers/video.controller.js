@@ -72,53 +72,26 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-	const { title, description, videoUrl, duration, thumbnailUrl } = req.body;
+	const {
+		title,
+		description,
+		videoUrl,
+		duration,
+		thumbnailUrl,
+		tags = [],
+	} = req.body;
 
 	if (!title || !description || !videoUrl || !thumbnailUrl) {
-		throw new ApiError(
-			400,
-			"Title, description, videoUrl, thumbnail are required",
-		);
+		throw new ApiError(400, "Required fields are missing");
 	}
-
-	// Updated field name from videoFile to video
-	// const videoLocalPath = req.files?.video?.[0]?.path;
-	// const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
-
-	// if (!videoLocalPath) {
-	// 	throw new ApiError(400, "Video file is missing");
-	// }
-
-	// const video = await uploadOnCloudinary(videoLocalPath);
-	// if (!video) {
-	// 	throw new ApiError(400, "Failed to upload video to Cloudinary");
-	// }
-	// const videoUrl = video?.secure_url;
-
-	// var thumbnailUrl = null;
-	// if (thumbnailLocalPath) {
-	// 	const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, true);
-	// 	if (!thumbnail) {
-	// 		throw new ApiError(400, "Failed to upload thumbnail to Cloudinary");
-	// 	}
-	// 	thumbnailUrl = thumbnail?.secure_url;
-	// }
-
-	console.log(
-		"Urls after video and thumbnail uplaoding.. ",
-		videoUrl,
-		" and ",
-		thumbnailUrl,
-		" and ",
-		req.user?.username,
-	);
 
 	const videoDetails = await Video.create({
 		videoFile: videoUrl,
 		thumbnail: thumbnailUrl,
-		title: title,
-		description: description,
-		duration: duration,
+		title,
+		description,
+		duration,
+		tags: tags.map((tag) => tag.toLowerCase()),
 		owner: req.user?._id,
 		username: req.user?.username,
 	});

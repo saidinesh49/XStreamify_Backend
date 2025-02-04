@@ -12,6 +12,7 @@ import dashboardRouter from "./routes/dashboard.routes.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
 import playlistRouter from "./routes/playlist.routes.js";
 import commentRouter from "./routes/comment.routes.js";
+import recommendationRouter from "./routes/recommendation.routes.js";
 
 const app = express();
 
@@ -54,5 +55,6 @@ app.use("/subscriptions/", subscriptionRouter);
 app.use("/comments/", commentRouter);
 app.use("/dashboard/", dashboardRouter);
 app.use("/healthcheck", healthcheckRouter);
+app.use("/feeds/", recommendationRouter);
 
 export { app };
