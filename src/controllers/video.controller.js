@@ -12,6 +12,8 @@ import { deleteVideoComments } from "./comment.controller.js";
 import { deleteVideoLikes } from "./like.controller.js";
 import { Like } from "../models/like.model.js";
 import { Comment } from "../models/comment.model.js";
+import searchService from "../services/search.service.js";
+import { Worker } from "worker_threads";
 
 const getAllVideos = asyncHandler(async (req, res) => {
 	const {
@@ -94,6 +96,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
 		tags: tags.map((tag) => tag.toLowerCase()),
 		owner: req.user?._id,
 		username: req.user?.username,
+	});
+
+	// Add tags to search engine in the main thread
+	tags.forEach((tag) => {
+		searchService.addTerm(tag.toLowerCase());
 	});
 
 	return res
