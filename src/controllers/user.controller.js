@@ -35,6 +35,56 @@ const generateAccessandRefreshtoken = async (userId) => {
 	}
 };
 
+const loginUserFromFirebaseData = async (req, res) => {
+	const { email } = req.body;
+	console.log("Email is: ", email);
+	if (!email) {
+		throw new ApiError(400, "firebase User data email is missing");
+	}
+
+	const user = await User.findOne({
+		$or: [{ email }],
+	});
+
+	if (!user) {
+		return res
+			.status(400)
+			.json(new ApiResponse(400, {}, "User does not exist"));
+	}
+
+	const { accessToken, refreshToken } = await generateAccessandRefreshtoken(
+		user._id,
+	);
+
+	// Await the user fetch to ensure you get the actual data
+	const loggedin = await User.findById(user._id).select(
+		"-password -refreshToken",
+	);
+
+	const options = {
+		httpOnly: true,
+		secure: false,
+	};
+
+	console.log("User : ", loggedin);
+
+	return res
+		.status(200)
+		.cookie("accessToken", accessToken, options)
+		.cookie("refreshToken", refreshToken, options)
+		.json(
+			new ApiResponse(
+				200,
+				{
+					user: loggedin, // FrontEnd accessibility as :
+					accessToken,
+					refreshToken,
+				},
+				"firebase GAuth User login successfully",
+			),
+		);
+};
+
 const loginUser = async (req, res) => {
 	const { username, email, password } = req.body;
 
@@ -539,6 +589,7 @@ const getUserByObjectId = asyncHandler(async (req, res) => {
 export {
 	generateAccessandRefreshtoken,
 	registerUser,
+	loginUserFromFirebaseData,
 	loginUser,
 	logoutUser,
 	refreshAccessToken,

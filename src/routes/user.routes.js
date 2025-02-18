@@ -6,6 +6,7 @@ import {
 	getUserChannelProfile,
 	getUserWatchHistory,
 	loginUser,
+	loginUserFromFirebaseData,
 	logoutUser,
 	refreshAccessToken,
 	registerUser,
@@ -31,6 +32,8 @@ router.route("/register").post(
 	// ]),
 	registerUser,
 );
+
+router.route("/gauth/login").post(loginUserFromFirebaseData);
 
 router.route("/login").post(loginUser);
 
