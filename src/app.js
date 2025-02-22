@@ -17,21 +17,23 @@ import searchEngineRouter from "./routes/search.routes.js";
 
 const app = express();
 
-app.use(
-	cors({
-		origin: ["http://localhost:5173", process.env.FRONTEND_URL],
-		allowedHeaders: [
-			"Origin",
-			"Accept",
-			"X-Requested-With",
-			"Content-Type",
-			"Authorization",
-		],
-		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-		credentials: true,
-		optionsSuccessStatus: 200,
-	}),
-);
+const corsOptions = {
+	origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+	methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+	allowedHeaders: [
+		"Origin",
+		"Accept",
+		"X-Requested-With",
+		"Content-Type",
+		"Authorization",
+	],
+	credentials: true,
+	optionsSuccessStatus: 200,
+};
+
+// Handle CORS preflight requests
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Use body-parser with increased limit
 app.use(bodyParser.json({ limit: "50mb", extended: true }));
@@ -43,7 +45,6 @@ app.use(
 	}),
 );
 app.use(express.json());
-
 app.use(express.static("public"));
 app.use(cookieParser());
 
