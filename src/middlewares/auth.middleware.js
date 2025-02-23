@@ -4,6 +4,19 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import admin from "../utils/firebase.js"; // Changed to import
 
+const verifyFirebaseToken = asyncHandler(async (req, res, next) => {
+	const { idToken, email } = req.body;
+	if (!idToken) {
+		throw new ApiError(400, "Token not recieved at backend");
+	}
+	const decodedToken = await admin.auth().verifyIdToken(String(idToken));
+	if (!decodedToken.uid || decodedToken.email != email) {
+		throw new ApiError(401, "token not valid");
+	}
+	req.body = { email: decodedToken?.email };
+	next();
+});
+
 const verifyJwt = asyncHandler(async (req, res, next) => {
 	try {
 		const token =
@@ -33,4 +46,4 @@ const verifyJwt = asyncHandler(async (req, res, next) => {
 	}
 });
 
-export { verifyJwt };
+export { verifyJwt, verifyFirebaseToken };
