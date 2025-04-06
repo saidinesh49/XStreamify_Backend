@@ -14,6 +14,7 @@ import playlistRouter from "./routes/playlist.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import recommendationRouter from "./routes/recommendation.routes.js";
 import searchEngineRouter from "./routes/search.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 
 const app = express();
 
@@ -59,5 +60,6 @@ app.use("/dashboard/", dashboardRouter);
 app.use("/healthcheck", healthcheckRouter);
 app.use("/feeds/", recommendationRouter);
 app.use("/search-engine/", searchEngineRouter);
+app.use("/notifications/", notificationRouter);
 
 export { app };

@@ -20,6 +20,11 @@ const recommendationSchema = new Schema(
 				trim: true,
 			},
 		],
+		parentUser: [{
+			type: Schema.Types.ObjectId,
+			ref: "User",
+			default: null
+		}],
 	},
 	{ timestamps: true },
 );
