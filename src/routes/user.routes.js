@@ -5,6 +5,7 @@ import {
 	getUserByObjectId,
 	getUserChannelProfile,
 	getUserWatchHistory,
+	googleAuthSignup,
 	loginUser,
 	loginUserFromFirebaseData,
 	logoutUser,
@@ -39,6 +40,8 @@ router.route("/register").post(
 router
 	.route("/gauth/login")
 	.post(verifyFirebaseToken, loginUserFromFirebaseData);
+
+router.route("/gauth/signup").post(googleAuthSignup);
 
 router.route("/login").post(loginUser);
 

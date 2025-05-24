@@ -586,6 +586,59 @@ const getUserByObjectId = asyncHandler(async (req, res) => {
 	}
 });
 
+const googleAuthSignup = asyncHandler(async (req, res) => {
+	const { fullName, email, avatar, password, username } = req.body;
+
+	if (!fullName || !email || !avatar || !password || !username) {
+		throw new ApiError(400, "Full name, email, password and avatar URL are required");
+	}
+
+	const existingUser = await User.findOne({ email });
+
+	if (existingUser) {
+		throw new ApiError(400, "User already exists with this email");
+	}
+
+	const newUser = await User.create({
+		fullName,
+		email,
+		avatar: avatar,
+		username: username.toLowerCase(),
+		password: password,
+		coverImage: "",
+	});
+
+	const {accessToken, refreshToken} = await generateAccessandRefreshtoken(newUser._id);
+	const options = {
+		httpOnly: true,
+		secure: false,
+	};
+
+	const createdUserViaGoogle = await User.findById(newUser._id).select(
+		"-password -refreshToken",
+	);
+
+	if(!createdUserViaGoogle) {
+		throw new ApiError(500, "Something went wrong while creating the user via google signup");
+	}
+
+	return res
+		.status(201)
+		.cookie("accessToken", accessToken, options)
+		.cookie("refreshToken", refreshToken, options)
+		.json(
+			new ApiResponse(
+				201,
+				{
+					user: createdUserViaGoogle,
+					accessToken,
+					refreshToken,
+				},
+				"Google Auth User registered successfully",
+			),
+		);
+});
+
 export {
 	generateAccessandRefreshtoken,
 	registerUser,
@@ -601,4 +654,5 @@ export {
 	getUserChannelProfile,
 	getUserWatchHistory,
 	getUserByObjectId,
+	googleAuthSignup,
 };
