@@ -9,7 +9,7 @@ const getSuggestions = asyncHandler(async (req, res) => {
 		throw new ApiError(400, "Query is required");
 	}
 
-	const suggestions = searchService.getSuggestions(query);
+	const suggestions = await searchService.getSuggestions(query);
 	return res
 		.status(200)
 		.json(
